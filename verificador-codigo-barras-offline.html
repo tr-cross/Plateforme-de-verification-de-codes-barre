@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verificador de Código de Barras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #EBEBEB;
+    --paper: #FFFFFF;
+    --ink: #141414;
+    --ink-soft: #6E6E6E;
+    --line: #DCDCDC;
+    --gold: #141414;
+    --gold-deep: #000000;
+    --sage: #141414;
+    --sage-bg: #F2F2F2;
+    --rust: #141414;
+    --rust-bg: #E2E2E2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:560px;
+    margin:0 auto;
+    padding:28px 18px 60px;
+  }
+  header{
+    margin-bottom:22px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--gold-deep);
+    margin:0 0 4px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:28px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    color:var(--ink-soft);
+    font-size:14px;
+    margin-top:4px;
+  }
+  .col-heading{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 10px;
+  }
+
+  /* Desktop layout: wider canvas, two-column workspace */
+  @media (min-width: 900px){
+    .app{
+      max-width:1180px;
+      padding:40px 40px 70px;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:28px;
+    }
+    header .heading-block{ }
+    header .header-actions .logout-btn,
+    header .menu-wrap{ margin-top:0; }
+    h1{ font-size:32px; }
+    .import-bar{ margin-bottom:28px; }
+    .verify-grid{
+      display:grid;
+      grid-template-columns: minmax(360px, 460px) 1fr;
+      gap:28px;
+      align-items:start;
+      margin-bottom:28px;
+    }
+    .verify-grid .verify-panel{ margin-bottom:0; }
+    #batchArea{
+      border:2px solid var(--ink);
+      border-radius:12px;
+      background:var(--paper);
+      padding:16px 20px 20px;
+    }
+    #productList{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap:32px;
+    }
+  }
+
+  /* search + result: single solid panel */
+  .verify-panel{
+    border:2px solid var(--ink);
+    border-radius:12px;
+    background:var(--paper);
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .search-box{
+    position:relative;
+  }
+  #searchInput{
+    width:100%;
+    padding:16px 16px 16px 46px;
+    font-size:17px;
+    font-family:'IBM Plex Mono',monospace;
+    letter-spacing:0.5px;
+    border:none;
+    background:transparent;
+    color:var(--ink);
+    outline:none;
+  }
+  .search-icon{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:18px;
+    color:var(--ink-soft);
+    pointer-events:none;
+  }
+
+  #resultArea:empty{ display:none; }
+  .detail-block{
+    border-top:2px solid var(--ink);
+    padding:16px 18px 18px;
+    animation:fadeIn .15s ease;
+  }
+  @keyframes fadeIn{ from{opacity:0;} to{opacity:1;} }
+  .detail-block.found{ background:var(--sage-bg); }
+  .detail-block.notfound{ background:var(--rust-bg); }
+
+  .detail-status{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .detail-block.found .detail-status{ color:var(--sage); }
+  .detail-block.notfound .detail-status{ color:var(--rust); }
+
+  .detail-desc{
+    font-family:'Fraunces',serif;
+    font-size:21px;
+    font-weight:600;
+    line-height:1.3;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .detail-code{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:2px;
+    color:var(--ink-soft);
+    margin-bottom:14px;
+  }
+  .empty-hint{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin:10px 0 12px;
+    padding-top:10px;
+    border-top:1px solid rgba(0,0,0,0.1);
+  }
+  .detail-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px 16px;
+    padding-top:12px;
+    border-top:1px solid rgba(0,0,0,0.1);
+  }
+  .detail-item{ min-width:0; }
+  .detail-label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:2px;
+  }
+  .detail-value{
+    display:block;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .detail-value.empty{ color:var(--ink-soft); font-weight:400; font-style:italic; }
+
+  .btn{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    border:none;
+    border-radius:8px;
+    padding:10px 16px;
+    cursor:pointer;
+    transition:opacity .15s;
+  }
+  .btn:hover{ opacity:0.85; }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .btn:disabled:hover{ opacity:0.5; }
+  .btn-gold{ background:var(--gold); color:#fff; }
+  .btn-outline{
+    background:transparent;
+    border:1.5px solid var(--ink);
+    color:var(--ink);
+  }
+  .btn-danger{ background:transparent; color:var(--rust); border:1.5px solid var(--rust); }
+  .btn-sm{ padding:6px 12px; font-size:12.5px; }
+
+  /* manage section */
+  .manage-toggle{
+    text-align:center;
+    margin:8px 0 4px;
+  }
+  .manage-toggle button{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    cursor:pointer;
+    padding:10px;
+  }
+  .manage-toggle button:hover{ color:var(--ink); }
+
+  #manageArea{
+    margin-top:14px;
+    border-top:1.5px solid var(--line);
+    padding-top:20px;
+  }
+  #manageArea.hidden{ display:none; }
+
+  .import-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    background:var(--paper);
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:22px;
+  }
+  .import-bar.attached{
+    border-bottom:none;
+    border-radius:10px 10px 0 0;
+    margin-bottom:0;
+  }
+  .import-bar .btn{ flex-shrink:0; }
+
+  .import-progress{
+    background:var(--ink);
+    color:var(--paper);
+    border:1.5px solid var(--ink);
+    border-radius:0 0 10px 10px;
+    padding:14px 16px 16px;
+    margin-bottom:22px;
+  }
+  .import-progress.hidden{ display:none; }
+  .import-progress-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.3px;
+    margin-bottom:8px;
+  }
+  .import-progress-track{
+    width:100%;
+    height:8px;
+    background:rgba(255,255,255,0.2);
+    border-radius:20px;
+    overflow:hidden;
+  }
+  .import-progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--paper);
+    border-radius:20px;
+    transition:width .15s ease;
+  }
+  .form-title{
+    font-family:'Fraunces',serif;
+    font-size:18px;
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .form-actions{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; margin-bottom:24px; }
+
+  textarea{
+    width:100%;
+    padding:12px 14px;
+    border:1.5px solid var(--line);
+    border-radius:7px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+    resize:vertical;
+    min-height:110px;
+  }
+  textarea:focus{ border-color:var(--gold-deep); }
+  .batch-hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:6px 0 14px;
+  }
+  .batch-summary{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:14px 0 10px;
+  }
+  .batch-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:10px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .batch-row.notfound{ background:var(--rust-bg); }
+  .batch-row-info{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .batch-row-code{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--ink);
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .batch-row-ref{
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    color:var(--ink-soft);
+  }
+  .batch-row-qty{
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--paper);
+    background:var(--ink);
+    border-radius:20px;
+    padding:1px 8px;
+  }
+  .batch-row-desc{
+    font-size:13.5px;
+    font-weight:600;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .list-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .product-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+    min-width:0;
+  }
+  .product-row-info{ min-width:0; }
+  .product-row-desc{
+    font-weight:600;
+    font-size:14.5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .product-row-meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .product-row-actions{ display:flex; gap:6px; flex-shrink:0; }
+  .section-header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .section-header-row .list-title{ margin-bottom:0; }
+  .list-title-toggle{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:0;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .list-title-toggle:hover{ color:var(--ink); }
+  #productListChevron{
+    display:inline-block;
+    font-size:12px;
+    transition:transform .15s;
+  }
+  #productList.collapsed{ display:none; }
+  .empty-state{
+    grid-column:1 / -1;
+    text-align:center;
+    padding:34px 16px;
+    color:var(--ink-soft);
+    font-size:14px;
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+  }
+  .empty-state-title{
+    font-family:'Fraunces',serif;
+    font-size:17px;
+    font-weight:600;
+    color:var(--ink);
+    margin:0 0 6px;
+  }
+  .empty-state-text{
+    font-size:13.5px;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+    max-width:320px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  .status-msg{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:16px;
+  }
+  .app-version{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:0.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    opacity:0.6;
+    margin-top:28px;
+  }
+
+  /* login gate */
+  .login-gate{
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+  }
+  .login-gate.hidden{ display:none; }
+  .login-card{
+    width:100%;
+    max-width:380px;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    border-radius:12px;
+    padding:32px 28px;
+  }
+  .login-card label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin:14px 0 4px;
+    font-weight:500;
+  }
+  .login-card input{
+    width:100%;
+    padding:12px 14px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+  }
+  .login-card input:focus{ border-color:var(--gold-deep); }
+  .login-submit{ width:100%; margin-top:20px; }
+  .login-error{
+    font-size:13px;
+    color:var(--ink);
+    background:var(--rust-bg);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-top:14px;
+  }
+  .login-error.hidden{ display:none; }
+  .login-note{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    line-height:1.5;
+    color:var(--ink-soft);
+    text-align:center;
+    margin-top:22px;
+  }
+
+  /* logout */
+  .logout-btn{
+    background:none;
+    border:1.5px solid var(--ink);
+    border-radius:8px;
+    padding:6px 14px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--ink);
+    cursor:pointer;
+    margin-top:12px;
+  }
+  .logout-btn:hover{ background:var(--ink); color:var(--paper); }
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .header-actions .logout-btn{ margin-top:12px; }
+
+  /* menu hambúrguer */
+  .menu-wrap{ position:relative; margin-top:12px; }
+  .menu-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    background:none;
+    border:1.5px solid var(--ink);
+    border-radius:8px;
+    font-size:16px;
+    line-height:1;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .menu-toggle:hover{ background:var(--ink); color:var(--paper); }
+  .menu-dropdown{
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    min-width:170px;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    border-radius:10px;
+    overflow:hidden;
+    z-index:600;
+    box-shadow:0 6px 18px rgba(0,0,0,0.15);
+  }
+  .menu-dropdown.hidden{ display:none; }
+  .menu-item{
+    display:block;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    border-bottom:1px solid var(--line);
+    padding:12px 16px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .menu-item:last-child{ border-bottom:none; }
+  .menu-item:hover{ background:var(--bg); }
+
+  /* modal genérico (Inventário / Sobre) */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(20,20,20,0.5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:900;
+  }
+  .modal-overlay.hidden{ display:none; }
+  .modal-card{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    background:var(--paper);
+    border:2px solid var(--ink);
+    border-radius:12px;
+    padding:32px 28px;
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .modal-close{
+    position:absolute;
+    top:14px;
+    right:14px;
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:none;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    font-size:13px;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .modal-close:hover{ border-color:var(--ink); color:var(--ink); }
+  .modal-title{
+    font-family:'Fraunces',serif;
+    font-size:20px;
+    font-weight:600;
+    margin:4px 0 12px;
+  }
+  .modal-text{
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+    margin:0 0 12px;
+  }
+  .modal-meta{
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.8;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+  }
+  .modal-meta strong{ color:var(--ink); }
+  .modal-text a, .modal-meta a{
+    color:var(--ink);
+    text-decoration:underline;
+    text-decoration-color:var(--line);
+    text-underline-offset:2px;
+  }
+  .modal-text a:hover, .modal-meta a:hover{ text-decoration-color:var(--ink); }
+</style>
+</head>
+<body>
+<div id="loginGate" class="login-gate">
+  <div class="login-card">
+    <p class="eyebrow">Controle de Estoque</p>
+    <h1 style="font-size:22px;">Acesso ao sistema</h1>
+    <p class="subtitle" style="margin-bottom:4px;">Entre com suas credenciais para continuar</p>
+    <form id="loginForm">
+      <label for="loginUser">Usuário</label>
+      <input type="text" id="loginUser" autocomplete="username" required>
+      <label for="loginPass">Senha</label>
+      <input type="password" id="loginPass" autocomplete="current-password" required>
+      <p id="loginError" class="login-error hidden"></p>
+      <button type="submit" class="btn btn-gold login-submit">Entrar</button>
+    </form>
+    <p class="login-note">Autenticação local temporária — pronta para conectar ao backend quando estiver disponível.</p>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
+  <header>
+    <div class="heading-block">
+      <p class="eyebrow">Controle de Estoque</p>
+      <h1>Verificador de Código de Barras</h1>
+      <p class="subtitle">Digite ou escaneie o código para conferir se está cadastrado</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" id="logoutBtn" class="logout-btn">Sair</button>
+      <div class="menu-wrap">
+        <button type="button" id="menuToggle" class="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div id="menuDropdown" class="menu-dropdown hidden">
+          <button type="button" class="menu-item" id="menuInventario">Inventário</button>
+          <button type="button" class="menu-item" id="menuSobre">Sobre</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <button type="button" class="modal-close" id="modalClose" aria-label="Fechar">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div class="import-bar">
+    <div>
+      <p class="form-title" style="margin:0 0 2px;">Importar base de dados</p>
+      <p class="batch-hint" style="margin:0;">Arquivo CSV com a coluna "Códigos de Barras" (aceita vários códigos por produto, separados por "|")</p>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" id="importCsvBtn">Importar CSV</button>
+    <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+  </div>
+
+  <div id="importProgress" class="import-progress hidden">
+    <div class="import-progress-header">
+      <span id="importProgressLabel">Importando...</span>
+      <span id="importProgressPct">0%</span>
+    </div>
+    <div class="import-progress-track">
+      <div class="import-progress-fill" id="importProgressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="verify-grid">
+    <div class="verify-col">
+      <p class="col-heading">Verificação individual</p>
+      <div class="verify-panel">
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input id="searchInput" type="text" placeholder="Código de barras" autocomplete="off">
+        </div>
+        <div id="resultArea"></div>
+      </div>
+    </div>
+
+    <div class="verify-col">
+      <p class="col-heading">Verificação em lote</p>
+      <div id="batchArea">
+        <p class="batch-hint" style="margin-top:0;">Cole ou escaneie vários códigos, um por linha, para conferir quais já estão cadastrados.</p>
+        <textarea id="batchInput" placeholder="7891234567890&#10;7899876543210&#10;7891112223334"></textarea>
+        <div class="form-actions">
+          <button type="button" class="btn btn-gold" id="runBatchBtn">Verificar lote</button>
+          <button type="button" class="btn btn-outline" id="exportBatchBtn">Exportar resultado (.txt)</button>
+          <button type="button" class="btn btn-outline" id="exportBatchRawBtn">Exportar só códigos (.txt)</button>
+        </div>
+        <div id="batchResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="manage-toggle">
+    <button id="toggleManage" type="button">Base de produtos ▾</button>
+  </div>
+
+  <div id="manageArea" class="hidden">
+    <div class="section-header-row">
+      <button type="button" class="list-title-toggle" id="toggleProductList">
+        <span id="productListChevron">▾</span> Produtos na base (<span id="productCount">0</span>)
+      </button>
+      <button type="button" class="btn btn-outline btn-sm" id="exportCatalogBtn">Exportar catálogo (.txt)</button>
+    </div>
+    <div id="productList"></div>
+  </div>
+
+  <p class="status-msg" id="statusMsg"></p>
+  <p class="app-version">Verificador de Código de Barras · v3.9.2 (offline)</p>
+</div>
+
+<script>
+let catalogo = [];
+
+const loginGate = document.getElementById('loginGate');
+const appRoot = document.getElementById('appRoot');
+const loginForm = document.getElementById('loginForm');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const menuToggle = document.getElementById('menuToggle');
+const menuDropdown = document.getElementById('menuDropdown');
+const menuInventario = document.getElementById('menuInventario');
+const menuSobre = document.getElementById('menuSobre');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalContent = document.getElementById('modalContent');
+const modalClose = document.getElementById('modalClose');
+
+const searchInput = document.getElementById('searchInput');
+const resultArea = document.getElementById('resultArea');
+const toggleManage = document.getElementById('toggleManage');
+const manageArea = document.getElementById('manageArea');
+const productList = document.getElementById('productList');
+const productCount = document.getElementById('productCount');
+const statusMsg = document.getElementById('statusMsg');
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
+}
+
+async function loadCatalogo(){
+  statusMsg.textContent = 'Carregando catálogo...';
+  try{
+    const raw = localStorage.getItem('catalogo');
+    catalogo = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    catalogo = [];
+  }
+  statusMsg.textContent = '';
+  renderList();
+}
+
+async function saveCatalogo(){
+  try{
+    localStorage.setItem('catalogo', JSON.stringify(catalogo));
+  }catch(e){
+    statusMsg.textContent = 'Erro ao salvar. Verifique o espaço de armazenamento do navegador.';
+  }
+}
+
+function normalizeCode(code){
+  const stripped = String(code).trim().replace(/^0+(?=\d)/, '');
+  return stripped;
+}
+
+function findExact(code){
+  const raw = String(code).trim();
+  const exact = catalogo.find(p => p.barcode === raw);
+  if(exact) return exact;
+  const norm = normalizeCode(raw);
+  return catalogo.find(p => normalizeCode(p.barcode) === norm);
+}
+
+function detailValue(v, unit){
+  if(v && String(v).trim()) return `<span class="detail-value">${escapeHtml(unit ? unit + v : v)}</span>`;
+  return `<span class="detail-value empty">—</span>`;
+}
+
+function renderResult(query){
+  if(!query){ resultArea.innerHTML = ''; return; }
+  const exact = findExact(query);
+  if(exact){
+    resultArea.innerHTML = `
+      <div class="detail-block found">
+        <p class="detail-status">✓ Código cadastrado</p>
+        <p class="detail-desc">${escapeHtml(exact.desc)}</p>
+        <p class="detail-code">${escapeHtml(exact.barcode)}${exact.ref ? ' · Ref. ' + escapeHtml(exact.ref) : ''}</p>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Categoria</span>
+            ${detailValue(exact.cat)}
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Tamanho</span>
+            ${detailValue(exact.tam)}
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Cor</span>
+            ${detailValue(exact.cor)}
+          </div>
+        </div>
+      </div>`;
+    return;
+  }
+  resultArea.innerHTML = `
+    <div class="detail-block notfound">
+      <p class="detail-status">✗ Código não cadastrado</p>
+      <p class="detail-code" style="margin-bottom:0;">${escapeHtml(query)}</p>
+      ${catalogo.length === 0 ? `
+        <p class="empty-hint">A base de produtos está vazia — importe um CSV para poder verificar códigos.</p>
+        <button type="button" class="btn btn-outline btn-sm" id="notfoundImportBtn">Importar CSV</button>
+      ` : ''}
+    </div>`;
+  const importBtn = document.getElementById('notfoundImportBtn');
+  if(importBtn) importBtn.addEventListener('click', () => document.getElementById('csvFileInput').click());
+}
+
+function matchesFilter(p, q){
+  const ql = q.toLowerCase();
+  return p.barcode.toLowerCase().includes(ql) || p.desc.toLowerCase().includes(ql);
+}
+
+function renderList(){
+  productCount.textContent = catalogo.length;
+  if(catalogo.length === 0){
+    productList.innerHTML = `
+      <div class="empty-state">
+        <p class="empty-state-title">Nenhum produto na base ainda</p>
+        <p class="empty-state-text">Importe um arquivo CSV com os códigos de barras dos produtos para começar a verificar.</p>
+        <button type="button" class="btn btn-gold btn-sm" id="emptyStateImportBtn">Importar CSV</button>
+      </div>`;
+    const btn = document.getElementById('emptyStateImportBtn');
+    if(btn) btn.addEventListener('click', () => document.getElementById('csvFileInput').click());
+    return;
+  }
+  const sorted = [...catalogo].sort((a,b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+  productList.innerHTML = sorted.map(p => `
+    <div class="product-row">
+      <div class="product-row-info">
+        <div class="product-row-desc">${escapeHtml(p.desc)}</div>
+        <div class="product-row-meta">${escapeHtml(p.barcode)}${p.ref ? ' · Ref. ' + escapeHtml(p.ref) : ''}${p.cat ? ' · ' + escapeHtml(p.cat) : ''}${p.tam ? ' · ' + escapeHtml(p.tam) : ''}</div>
+      </div>
+      <div class="product-row-actions">
+        <button class="btn btn-danger btn-sm" data-delete="${escapeHtml(p.barcode)}">Excluir</button>
+      </div>
+    </div>
+  `).join('');
+
+  productList.querySelectorAll('[data-delete]').forEach(btn => {
+    btn.onclick = () => deleteProduct(btn.dataset.delete);
+  });
+}
+
+async function deleteProduct(barcode){
+  if(!confirm('Excluir este produto da base?')) return;
+  catalogo = catalogo.filter(p => p.barcode !== barcode);
+  await saveCatalogo();
+  renderList();
+  if(searchInput.value.trim() === barcode) resultArea.innerHTML = '';
+}
+
+toggleManage.addEventListener('click', () => {
+  manageArea.classList.toggle('hidden');
+  toggleManage.textContent = manageArea.classList.contains('hidden')
+    ? 'Base de produtos ▾'
+    : 'Base de produtos ▴';
+});
+
+function formatLine(p){
+  const parts = [p.desc];
+  if(p.ref) parts.push('Ref ' + p.ref);
+  if(p.cat) parts.push(p.cat);
+  if(p.tam) parts.push('Tam ' + p.tam);
+  if(p.cor) parts.push(p.cor);
+  if(p.preco) parts.push('R$ ' + Number(p.preco).toFixed(2));
+  return parts.join(' | ');
+}
+
+function downloadTxt(content, filename){
+  const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+let lastBatchResults = [];
+
+function runBatchQuery(){
+  const raw = document.getElementById('batchInput').value;
+  const codes = raw.split(/\r?\n/).map(c => c.trim()).filter(c => c.length > 0);
+
+  const grouped = new Map();
+  codes.forEach(code => {
+    if(grouped.has(code)) grouped.get(code).count++;
+    else grouped.set(code, {count: 1});
+  });
+
+  lastBatchResults = Array.from(grouped.entries()).map(([code, info]) => {
+    const p = findExact(code);
+    return p
+      ? {code, count: info.count, found: true, ...p}
+      : {code, count: info.count, found: false};
+  });
+  renderBatchResults();
+}
+
+function renderBatchResults(){
+  const el = document.getElementById('batchResults');
+  if(lastBatchResults.length === 0){
+    el.innerHTML = '';
+    return;
+  }
+  const foundCount = lastBatchResults.filter(r => r.found).length;
+  const totalLidos = lastBatchResults.reduce((sum, r) => sum + r.count, 0);
+  const rows = lastBatchResults.map(r => `
+    <div class="batch-row ${r.found ? 'found' : 'notfound'}">
+      <span class="batch-row-info">
+        <span class="batch-row-code">
+          ${escapeHtml(r.code)}
+          ${r.count > 1 ? `<span class="batch-row-qty">× ${r.count}</span>` : ''}
+        </span>
+        ${r.found && r.ref ? `<span class="batch-row-ref">Ref. ${escapeHtml(r.ref)}</span>` : ''}
+      </span>
+      <span class="batch-row-desc">${r.found ? '✓ Cadastrado' : '✗ Não cadastrado'}</span>
+    </div>
+  `).join('');
+  el.innerHTML = `
+    <p class="batch-summary">${lastBatchResults.length} códigos únicos (${totalLidos} lidos) — ${foundCount} cadastrados, ${lastBatchResults.length - foundCount} não cadastrados</p>
+    ${rows}
+  `;
+}
+
+document.getElementById('runBatchBtn').addEventListener('click', runBatchQuery);
+
+document.getElementById('exportBatchBtn').addEventListener('click', () => {
+  if(lastBatchResults.length === 0){
+    alert('Consulte um lote antes de exportar.');
+    return;
+  }
+  const header = `Verificação em lote\n${new Date().toLocaleString('pt-BR')}\n${'-'.repeat(40)}\n\n`;
+  const lines = lastBatchResults.map(r =>
+    `${r.code}\tQtd: ${r.count}\t${r.found ? 'CADASTRADO' : 'NÃO CADASTRADO'}${r.found && r.ref ? '\tRef: ' + r.ref : ''}`
+  );
+  const foundCount = lastBatchResults.filter(r => r.found).length;
+  const totalLidos = lastBatchResults.reduce((sum, r) => sum + r.count, 0);
+  const footer = `\n${'-'.repeat(40)}\nCódigos únicos: ${lastBatchResults.length} | Total lido: ${totalLidos} | Cadastrados: ${foundCount} | Não cadastrados: ${lastBatchResults.length - foundCount}`;
+  downloadTxt(header + lines.join('\n') + footer, `verificacao-lote-${Date.now()}.txt`);
+});
+
+document.getElementById('exportBatchRawBtn').addEventListener('click', () => {
+  if(lastBatchResults.length === 0){
+    alert('Consulte um lote antes de exportar.');
+    return;
+  }
+  const lines = lastBatchResults.map(r => r.code);
+  downloadTxt(lines.join('\n'), `codigos-lote-${Date.now()}.txt`);
+});
+
+document.getElementById('exportCatalogBtn').addEventListener('click', () => {
+  if(catalogo.length === 0){
+    alert('Nenhum produto na base ainda.');
+    return;
+  }
+  const sorted = [...catalogo].sort((a,b) => a.desc.localeCompare(b.desc, 'pt-BR'));
+  const header = `Catálogo de Produtos\n${new Date().toLocaleString('pt-BR')}\nTotal: ${catalogo.length} produtos\n${'-'.repeat(40)}\n\n`;
+  const lines = sorted.map(p => `${p.barcode}\t${formatLine(p)}`);
+  downloadTxt(header + lines.join('\n'), `catalogo-produtos-${Date.now()}.txt`);
+});
+
+function parseCSV(text){
+  text = text.replace(/^\uFEFF/, '');
+  const rows = [];
+  let field = '', row = [], inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const char = text[i];
+    if(inQuotes){
+      if(char === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else { inQuotes = false; }
+      } else { field += char; }
+    } else {
+      if(char === '"'){ inQuotes = true; }
+      else if(char === ','){ row.push(field); field = ''; }
+      else if(char === '\r'){ /* skip */ }
+      else if(char === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else { field += char; }
+    }
+  }
+  if(field.length > 0 || row.length > 0){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+}
+
+function upsertProduct(entry){
+  const idx = catalogo.findIndex(p => p.barcode === entry.barcode);
+  if(idx > -1) catalogo[idx] = entry;
+  else catalogo.push(entry);
+}
+
+async function importCsv(file){
+  const importBtn = document.getElementById('importCsvBtn');
+  const importBar = document.querySelector('.import-bar');
+  const progressBox = document.getElementById('importProgress');
+  const progressLabel = document.getElementById('importProgressLabel');
+  const progressPct = document.getElementById('importProgressPct');
+  const progressFill = document.getElementById('importProgressFill');
+
+  function setProgress(label, pct){
+    progressLabel.textContent = label;
+    progressPct.textContent = pct + '%';
+    progressFill.style.width = pct + '%';
+  }
+
+  importBtn.disabled = true;
+  importBar.classList.add('attached');
+  progressBox.classList.remove('hidden');
+  setProgress('Lendo arquivo...', 0);
+
+  try{
+    const text = await file.text();
+    const rows = parseCSV(text);
+    if(rows.length < 2){
+      setProgress('Arquivo vazio ou inválido.', 0);
+      return;
+    }
+    const header = rows[0].map(h => h.trim());
+    const idxBarcode = header.indexOf('Códigos de Barras');
+    const idxDesc = header.indexOf('Descrição');
+    const idxLinha = header.indexOf('Linha');
+    const idxTamanho = header.indexOf('Tamanho');
+    const idxCor = header.indexOf('Cor');
+    const idxRef = header.indexOf('Referência');
+
+    if(idxBarcode === -1 || idxDesc === -1){
+      setProgress('Colunas obrigatórias não encontradas no CSV.', 0);
+      return;
+    }
+
+    let produtosImportados = 0;
+    let codigosImportados = 0;
+    const totalLinhas = rows.length - 1;
+    const chunkSize = 20;
+
+    for(let i = 1; i < rows.length; i++){
+      const row = rows[i];
+      const desc = (row[idxDesc] || '').trim();
+      const codesRaw = (row[idxBarcode] || '').trim();
+
+      if(desc && codesRaw){
+        const codes = codesRaw.split('|').map(c => c.trim()).filter(c => c.length > 0);
+        if(codes.length > 0){
+          const cat = idxLinha > -1 ? (row[idxLinha] || '').trim() : '';
+          const tam = idxTamanho > -1 ? (row[idxTamanho] || '').trim() : '';
+          const cor = idxCor > -1 ? (row[idxCor] || '').trim() : '';
+          const ref = idxRef > -1 ? (row[idxRef] || '').trim() : '';
+
+          codes.forEach(barcode => {
+            upsertProduct({ barcode, desc, cat, tam, cor, ref, preco: '' });
+            codigosImportados++;
+          });
+          produtosImportados++;
+        }
+      }
+
+      if(i % chunkSize === 0 || i === rows.length - 1){
+        const pct = Math.round((i / totalLinhas) * 100);
+        setProgress(`Importando... ${i} de ${totalLinhas} linhas`, pct);
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+
+    setProgress('Salvando catálogo...', 100);
+    await saveCatalogo();
+    renderList();
+
+    setProgress(`✓ Concluído: ${produtosImportados} produtos, ${codigosImportados} códigos`, 100);
+    setTimeout(() => {
+      progressBox.classList.add('hidden');
+      importBar.classList.remove('attached');
+    }, 4000);
+  }catch(e){
+    setProgress('✗ Erro ao importar. Verifique o formato do CSV.', 0);
+    setTimeout(() => {
+      progressBox.classList.add('hidden');
+      importBar.classList.remove('attached');
+    }, 5000);
+  }finally{
+    importBtn.disabled = false;
+  }
+}
+
+document.getElementById('toggleProductList').addEventListener('click', () => {
+  productList.classList.toggle('collapsed');
+  document.getElementById('productListChevron').textContent =
+    productList.classList.contains('collapsed') ? '▸' : '▾';
+});
+
+document.getElementById('importCsvBtn').addEventListener('click', () => {
+  document.getElementById('csvFileInput').click();
+});
+document.getElementById('csvFileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(file) importCsv(file);
+  e.target.value = '';
+});
+
+let searchDebounce;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  const q = searchInput.value.trim();
+  searchDebounce = setTimeout(() => renderResult(q), 120);
+});
+searchInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    renderResult(searchInput.value.trim());
+  }
+});
+
+/* =====================================================================
+ * AUTENTICAÇÃO
+ * Placeholder local — aceita qualquer usuário/senha não vazios, só pra
+ * já existir o fluxo de login pronto na interface.
+ *
+ * Quando o backend estiver disponível, troque o CORPO desta função por
+ * uma chamada real à API, por exemplo:
+ *
+ *   async function authenticateUser(username, password) {
+ *     const response = await fetch('https://SEU-BACKEND/api/login', {
+ *       method: 'POST',
+ *       headers: { 'Content-Type': 'application/json' },
+ *       body: JSON.stringify({ username, password })
+ *     });
+ *     if (!response.ok) {
+ *       return { success: false, message: 'Usuário ou senha inválidos.' };
+ *     }
+ *     const data = await response.json();
+ *     return { success: true, token: data.token };
+ *   }
+ *
+ * O retorno { success, token } (ou { success, message } em caso de erro)
+ * já é o formato esperado pelo restante do código abaixo — não precisa
+ * mexer em mais nada além do corpo desta função.
+ * ===================================================================== */
+async function authenticateUser(username, password){
+  if(username.trim() && password.trim()){
+    return { success: true };
+  }
+  return { success: false, message: 'Preencha usuário e senha.' };
+}
+
+function showApp(){
+  loginGate.classList.add('hidden');
+  appRoot.style.display = '';
+  loadCatalogo();
+}
+
+function showLoginGate(){
+  appRoot.style.display = 'none';
+  loginGate.classList.remove('hidden');
+  loginError.classList.add('hidden');
+  loginForm.reset();
+}
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('loginUser').value;
+  const password = document.getElementById('loginPass').value;
+  loginError.classList.add('hidden');
+
+  const result = await authenticateUser(username, password);
+  if(result.success){
+    sessionStorage.setItem('auth_session', JSON.stringify({ username, at: Date.now() }));
+    showApp();
+  } else {
+    loginError.textContent = result.message || 'Não foi possível entrar. Tente novamente.';
+    loginError.classList.remove('hidden');
+  }
+});
+
+logoutBtn.addEventListener('click', () => {
+  sessionStorage.removeItem('auth_session');
+  showLoginGate();
+});
+
+if(sessionStorage.getItem('auth_session')){
+  showApp();
+}
+
+/* ===== menu hambúrguer ===== */
+menuToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
+  menuDropdown.classList.toggle('hidden');
+});
+
+document.addEventListener('click', (e) => {
+  if(!menuDropdown.classList.contains('hidden') && !menuDropdown.contains(e.target) && e.target !== menuToggle){
+    menuDropdown.classList.add('hidden');
+  }
+});
+
+/* ===== modal genérico ===== */
+function openModal(html){
+  modalContent.innerHTML = html;
+  modalOverlay.classList.remove('hidden');
+}
+function closeModal(){
+  modalOverlay.classList.add('hidden');
+}
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => {
+  if(e.target === modalOverlay) closeModal();
+});
+
+menuInventario.addEventListener('click', () => {
+  menuDropdown.classList.add('hidden');
+  openModal(`
+    <p class="eyebrow">Em desenvolvimento</p>
+    <p class="modal-title">Inventário</p>
+    <p class="modal-text">Esta seção ainda está sendo construída. Em breve você poderá controlar entradas, saídas e contagens de estoque diretamente por aqui.</p>
+  `);
+});
+
+menuSobre.addEventListener('click', () => {
+  menuDropdown.classList.add('hidden');
+  openModal(`
+    <p class="eyebrow">Sobre o projeto</p>
+    <p class="modal-title">Verificador de Código de Barras</p>
+    <p class="modal-text">
+      Para uso empresarial interno.<br>
+      Desenvolvido por <a href="https://github.com/tr-cross" target="_blank" rel="noopener noreferrer">Guilherme Alcântara</a><br>
+      Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic) no processo de desenvolvimento.
+    </p>
+    <div class="modal-meta">
+      Versão atual: <strong>v3.9.2</strong><br>
+      Licença planejada para publicação: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
+    </div>
+  `);
+});
+
+</script>
+</body>
+</html>
