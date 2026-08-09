@@ -6,7 +6,6 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 
 | Build | Arquivo | Armazenamento | Onde roda |
 |---|---|---|---|
-| Claude | `verificador-codigo-barras-vX.Y.Z.html` | `window.storage` (API de artefatos do Claude) | Dentro do claude.ai, como artefato |
 | Offline | `verificador-codigo-barras-offline-vX.Y.Z.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
 
 As duas builds têm as mesmas funcionalidades; a única diferença é a camada de armazenamento dos dados.
