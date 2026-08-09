@@ -22,9 +22,6 @@ As duas builds têm as mesmas funcionalidades; a única diferença é a camada d
 
 ## Como usar
 
-### Build Claude
-Suba o arquivo `.html` como artefato numa conversa do Claude, ou peça pro Claude recriar/editar a partir dele.
-
 ### Build offline
 Baixe o arquivo `-offline-` e abra direto no navegador (duplo clique), ou sirva localmente com qualquer servidor estático (ex: extensão Live Server do VS Code). Não precisa de Node, build step ou instalação — é HTML puro.
 
