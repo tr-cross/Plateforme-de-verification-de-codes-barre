@@ -1,14 +1,12 @@
 # Verificador de Código de Barras
 
-Ferramenta web para conferência rápida de códigos de barras contra uma base de produtos importada via CSV. Pensada para uso em varejo — recebimento de mercadoria, conferência de estoque e consulta de produtos — mas sem dependências específicas de negócio.
+Ferramenta web para conferência rápida de códigos de barras contra uma base de produtos importada via CSV. Pensada para uso em estoque — recebimento de mercadoria, conferência e consulta de produtos — mas sem dependências específicas
 
-Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas além de fontes web), disponível em duas builds:
+Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas além de fontes web):
 
 | Build | Arquivo | Armazenamento | Onde roda |
 |---|---|---|---|
 | Offline | `verificador-codigo-barras-offline-vX.Y.Z.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
-
-As duas builds têm as mesmas funcionalidades; a única diferença é a camada de armazenamento dos dados.
 
 ## Funcionalidades
 
@@ -23,7 +21,7 @@ As duas builds têm as mesmas funcionalidades; a única diferença é a camada d
 ## Como usar
 
 ### Build offline
-Baixe o arquivo `-offline-` e abra direto no navegador (duplo clique), ou sirva localmente com qualquer servidor estático (ex: extensão Live Server do VS Code). Não precisa de Node, build step ou instalação — é HTML puro.
+Baixe o arquivo `-offline-` e abra direto no navegador (duplo clique), ou sirva localmente com qualquer servidor estático (ex: extensão Live Server do VS Code). Não precisa de Node.js, build step ou instalação — é HTML puro (por enquanto).
 
 ## Formato do CSV esperado
 
