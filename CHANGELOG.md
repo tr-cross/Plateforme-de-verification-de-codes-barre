@@ -3,6 +3,10 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.9.3]
+### Fixed
+- Exportação "só códigos" (.txt) do lote não repetia códigos duplicados. Causa: a exportação usava a lista já agrupada por código único, ignorando o campo de contagem (`count`). Cada código passa a ser repetido conforme o número real de vezes escaneado.
+
 ## [3.9.2]
 ### Changed
 - Removidas todas as referências ao nome de empresa anteriormente hardcoded no código (título, cabeçalho, exportações `.txt`).
@@ -120,3 +124,4 @@ Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MIN
 ## [1.0.0]
 ### Added
 - Lançamento inicial: busca de produto por código de barras, CRUD manual, armazenamento persistente.
+
