@@ -782,7 +782,7 @@
   </div>
 
   <p class="status-msg" id="statusMsg"></p>
-  <p class="app-version">Verificador de Código de Barras · v3.9.2 (offline)</p>
+  <p class="app-version">Verificador de Código de Barras · v3.9.3 (offline)</p>
 </div>
 
 <script>
@@ -1034,7 +1034,12 @@ document.getElementById('exportBatchRawBtn').addEventListener('click', () => {
     alert('Consulte um lote antes de exportar.');
     return;
   }
-  const lines = lastBatchResults.map(r => r.code);
+  const lines = [];
+  lastBatchResults.forEach(r => {
+    for(let i = 0; i < r.count; i++){
+      lines.push(r.code);
+    }
+  });
   downloadTxt(lines.join('\n'), `codigos-lote-${Date.now()}.txt`);
 });
 
@@ -1310,11 +1315,11 @@ menuSobre.addEventListener('click', () => {
     <p class="modal-text">
       Para uso empresarial interno.<br>
       Desenvolvido por <a href="https://github.com/tr-cross" target="_blank" rel="noopener noreferrer">Guilherme Alcântara</a><br>
-      Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic).
+      Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic) no processo de desenvolvimento.
     </p>
     <div class="modal-meta">
-      Versão atual: <strong>v3.9.2</strong><br>
-      Licença: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
+      Versão atual: <strong>v3.9.3</strong><br>
+      Licença planejada para publicação: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
     </div>
   `);
 });
