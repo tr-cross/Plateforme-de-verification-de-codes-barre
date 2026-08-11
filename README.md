@@ -6,7 +6,7 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 
 | Build | Arquivo | Armazenamento | Onde roda |
 |---|---|---|---|
-| Offline | `verificador-codigo-barras-offline-vX.Y.Z.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
+| Offline | `verificador-codigo-barras.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
 
 ## Funcionalidades
 
