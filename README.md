@@ -13,7 +13,7 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 ## Funcionalidades
 
 - **Verificação individual** — digite ou escaneie um código de barras e veja na hora se está cadastrado, com descrição, referência, categoria, tamanho e cor.
-- **Verificação em lote** — cole ou escaneie vários códigos (um por linha); a lista agrupa repetidos e mostra quantos foram encontrados/não encontrados. A verificação roda automaticamente a cada código completado (compatível com leitores de código de barras, que simulam "Enter" após a leitura), com beep de confirmação (encontrado) ou aviso (não encontrado) para uso sem precisar olhar a tela.
+- **Verificação em lote** — cole ou escaneie vários códigos (um por linha); a lista agrupa repetidos e mostra quantos foram encontrados/não encontrados. A verificação roda automaticamente a cada código completado (compatível com leitores de código de barras, que simulam "Enter" após a leitura). Toca um som apenas quando o código **não está cadastrado** — sem som para códigos cadastrados, para não gerar falso-positivo de atenção.
 - **Importação via CSV** — suporta múltiplos códigos de barras por produto (delimitador `|`), com barra de progresso durante a importação.
 - **Exportação em `.txt`** — resultado completo (com status/quantidade/referência) ou lista crua de códigos, tanto na verificação individual quanto em lote.
 - **Normalização de código** — zeros à esquerda são ignorados na comparação (`12345` == `012345`), cobrindo divergências entre simbologias UPC-A/EAN-13.
