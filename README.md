@@ -1,17 +1,19 @@
 # Verificador de Código de Barras
 
-Ferramenta web para conferência rápida de códigos de barras contra uma base de produtos importada via CSV. Pensada para uso em estoque — recebimento de mercadoria, conferência e consulta de produtos — mas sem dependências específicas
+Ferramenta web para conferência rápida de códigos de barras contra uma base de produtos importada via CSV. Pensada para uso em varejo — recebimento de mercadoria, conferência de estoque e consulta de produtos — mas sem dependências específicas de negócio.
 
-Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas além de fontes web):
+Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas além de fontes web).
 
-| Build | Arquivo | Armazenamento | Onde roda |
-|---|---|---|---|
-| Offline | `verificador-codigo-barras.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
+| Arquivo | Armazenamento | Onde roda |
+|---|---|---|
+| `verificador-codigo-barras-offline.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
+
+> Este repositório publica apenas a build offline. Uma build alternativa (usando `window.storage`, a API de armazenamento de artefatos do Claude) é usada internamente para testes de desenvolvimento dentro do claude.ai, mas não é distribuída aqui — depende de acesso à IA da Anthropic, o que não deve ser um pré-requisito para usar o projeto.
 
 ## Funcionalidades
 
 - **Verificação individual** — digite ou escaneie um código de barras e veja na hora se está cadastrado, com descrição, referência, categoria, tamanho e cor.
-- **Verificação em lote** — cole ou escaneie vários códigos (um por linha); a lista agrupa repetidos e mostra quantos foram encontrados/não encontrados.
+- **Verificação em lote** — cole ou escaneie vários códigos (um por linha); a lista agrupa repetidos e mostra quantos foram encontrados/não encontrados. A verificação roda automaticamente a cada código completado (compatível com leitores de código de barras, que simulam "Enter" após a leitura), com beep de confirmação (encontrado) ou aviso (não encontrado) para uso sem precisar olhar a tela.
 - **Importação via CSV** — suporta múltiplos códigos de barras por produto (delimitador `|`), com barra de progresso durante a importação.
 - **Exportação em `.txt`** — resultado completo (com status/quantidade/referência) ou lista crua de códigos, tanto na verificação individual quanto em lote.
 - **Normalização de código** — zeros à esquerda são ignorados na comparação (`12345` == `012345`), cobrindo divergências entre simbologias UPC-A/EAN-13.
@@ -20,8 +22,7 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 
 ## Como usar
 
-### Build offline
-Baixe o arquivo `-offline-` e abra direto no navegador (duplo clique), ou sirva localmente com qualquer servidor estático (ex: extensão Live Server do VS Code). Não precisa de Node.js, build step ou instalação — é HTML puro (por enquanto).
+Baixe o arquivo `verificador-codigo-barras-offline.html` e abra direto no navegador (duplo clique), ou sirva localmente com qualquer servidor estático (ex: extensão Live Server do VS Code). Não precisa de Node, build step ou instalação — é HTML puro.
 
 ## Formato do CSV esperado
 
