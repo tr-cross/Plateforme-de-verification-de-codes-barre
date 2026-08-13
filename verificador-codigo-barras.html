@@ -755,7 +755,7 @@
     <div class="verify-col">
       <p class="col-heading">Verificação em lote</p>
       <div id="batchArea">
-        <p class="batch-hint" style="margin-top:0;">Cole ou escaneie vários códigos, um por linha, para conferir quais já estão cadastrados.</p>
+        <p class="batch-hint" style="margin-top:0;">Cole ou escaneie vários códigos, um por linha — a verificação roda sozinha a cada código completado. O botão serve para colar listas prontas ou revisar manualmente.</p>
         <textarea id="batchInput" placeholder="7891234567890&#10;7899876543210&#10;7891112223334"></textarea>
         <div class="form-actions">
           <button type="button" class="btn btn-gold" id="runBatchBtn">Verificar lote</button>
@@ -782,7 +782,7 @@
   </div>
 
   <p class="status-msg" id="statusMsg"></p>
-  <p class="app-version">Verificador de Código de Barras · v3.9.3 (offline)</p>
+  <p class="app-version">Verificador de Código de Barras · v3.10.0 (offline)</p>
 </div>
 
 <script>
@@ -967,6 +967,69 @@ function downloadTxt(content, filename){
 
 let lastBatchResults = [];
 
+/* ===== feedback sonoro (Web Audio API — sem arquivos externos) =====
+ * Beep único agudo = código encontrado. Dois beeps graves = não encontrado.
+ * Pensado para o usuário confirmar o resultado sem precisar olhar pra tela,
+ * já que o leitor de código de barras costuma ser usado a certa distância. */
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function beep(freq, duration, delay, type, volume){
+  try{
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const startAt = ctx.currentTime + delay;
+    gain.gain.setValueAtTime(0.0001, startAt);
+    gain.gain.exponentialRampToValueAtTime(volume, startAt + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+    osc.start(startAt);
+    osc.stop(startAt + duration + 0.02);
+  }catch(e){ /* áudio indisponível — ignora silenciosamente */ }
+}
+function playScanFeedback(found){
+  if(found){
+    beep(1046.5, 0.09, 0, 'sine', 0.18);
+  } else {
+    beep(220, 0.11, 0, 'square', 0.15);
+    beep(180, 0.15, 0.12, 'square', 0.15);
+  }
+}
+
+/* ===== auto-verificação do lote a cada código escaneado =====
+ * Leitores de código de barras costumam simular um "Enter" após cada
+ * leitura. Detectamos quando uma linha é completada (quebra de linha
+ * inserida) e reprocessamos o lote automaticamente, tocando o som
+ * correspondente só para o código recém-lido. */
+const batchInput = document.getElementById('batchInput');
+let batchLineCount = 0;
+
+function completedLines(text){
+  const parts = text.split('\n');
+  parts.pop(); // última "linha" é o que ainda está sendo digitado (ou vazio)
+  return parts.map(l => l.trim()).filter(l => l.length > 0);
+}
+
+batchInput.addEventListener('input', () => {
+  const lines = completedLines(batchInput.value);
+  const added = lines.length - batchLineCount;
+  if(added > 0){
+    runBatchQuery();
+    if(added === 1){
+      const lastCode = lines[lines.length - 1];
+      playScanFeedback(!!findExact(lastCode));
+    }
+  }
+  batchLineCount = lines.length;
+});
+
 function runBatchQuery(){
   const raw = document.getElementById('batchInput').value;
   const codes = raw.split(/\r?\n/).map(c => c.trim()).filter(c => c.length > 0);
@@ -1012,7 +1075,10 @@ function renderBatchResults(){
   `;
 }
 
-document.getElementById('runBatchBtn').addEventListener('click', runBatchQuery);
+document.getElementById('runBatchBtn').addEventListener('click', () => {
+  runBatchQuery();
+  batchLineCount = completedLines(batchInput.value).length;
+});
 
 document.getElementById('exportBatchBtn').addEventListener('click', () => {
   if(lastBatchResults.length === 0){
@@ -1315,11 +1381,11 @@ menuSobre.addEventListener('click', () => {
     <p class="modal-text">
       Para uso empresarial interno.<br>
       Desenvolvido por <a href="https://github.com/tr-cross" target="_blank" rel="noopener noreferrer">Guilherme Alcântara</a><br>
-      Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic).
+      Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic) no processo de desenvolvimento.
     </p>
     <div class="modal-meta">
-      Versão atual: <strong>v3.9.3</strong><br>
-      Licença: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
+      Versão atual: <strong>v3.10.0</strong><br>
+      Licença planejada para publicação: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
     </div>
   `);
 });
