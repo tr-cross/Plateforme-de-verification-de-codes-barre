@@ -3,6 +3,11 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.11.0]
+### Changed
+- Feedback sonoro da verificação em lote: removido o beep de código **cadastrado** (som só quando exige atenção do usuário, reduzindo falso-positivo de "ouvi um bipe, deve estar tudo certo").
+- Som de código **não cadastrado** substituído por áudio próprio (arquivo `.ogg` fornecido, embutido em base64 no HTML — mantém o arquivo single-file, sem dependência externa). O beep grave duplo gerado por Web Audio API passa a ser usado só como fallback automático, caso o áudio embutido falhe ao carregar ou tocar.
+
 ## [3.10.0]
 ### Added
 - Verificação em lote automática: cada código completado (quebra de linha, como o "Enter" simulado por leitores de código de barras) dispara a verificação sozinho, sem precisar clicar em "Verificar lote". O botão continua disponível para colar listas prontas ou revisar manualmente.
