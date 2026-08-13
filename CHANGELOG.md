@@ -3,6 +3,11 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.10.0]
+### Added
+- Verificação em lote automática: cada código completado (quebra de linha, como o "Enter" simulado por leitores de código de barras) dispara a verificação sozinho, sem precisar clicar em "Verificar lote". O botão continua disponível para colar listas prontas ou revisar manualmente.
+- Feedback sonoro na verificação em lote (Web Audio API, sem arquivo externo): beep agudo único quando o código recém-lido está cadastrado; dois beeps graves quando não está — pensado para o usuário confirmar o resultado sem precisar olhar a tela a cada leitura.
+
 ## [3.9.3]
 ### Fixed
 - Exportação "só códigos" (.txt) do lote não repetia códigos duplicados. Causa: a exportação usava a lista já agrupada por código único, ignorando o campo de contagem (`count`). Cada código passa a ser repetido conforme o número real de vezes escaneado.
@@ -124,4 +129,3 @@ Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MIN
 ## [1.0.0]
 ### Added
 - Lançamento inicial: busca de produto por código de barras, CRUD manual, armazenamento persistente.
-
