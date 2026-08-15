@@ -782,11 +782,12 @@
   </div>
 
   <p class="status-msg" id="statusMsg"></p>
-  <p class="app-version">Verificador de Código de Barras · v3.11.0 (offline)</p>
+  <p class="app-version">Verificador de Código de Barras · v3.12.0 (offline)</p>
 </div>
 
 <script>
 let catalogo = [];
+let catalogMap = new Map(); // índice normalizedCode -> produto, para busca O(1)
 
 const loginGate = document.getElementById('loginGate');
 const appRoot = document.getElementById('appRoot');
@@ -815,13 +816,35 @@ function escapeHtml(str){
   return d.innerHTML;
 }
 
+function normalizeCode(code){
+  const stripped = String(code).trim().replace(/^0+(?=\d)/, '');
+  return stripped;
+}
+
+/* Reconstrói o índice de busca a partir do array catalogo. Chamado sempre
+ * que catalogo é substituído por inteiro (carregar/salvar). upsertProduct
+ * e deleteProduct atualizam o Map incrementalmente, sem precisar disso. */
+function rebuildCatalogMap(){
+  catalogMap = new Map();
+  for(const p of catalogo){
+    catalogMap.set(normalizeCode(p.barcode), p);
+  }
+}
+
+function findExact(code){
+  const key = normalizeCode(String(code).trim());
+  return catalogMap.get(key) || null;
+}
+
 async function loadCatalogo(){
   statusMsg.textContent = 'Carregando catálogo...';
   try{
     const raw = localStorage.getItem('catalogo');
     catalogo = raw ? JSON.parse(raw) : [];
+    rebuildCatalogMap();
   }catch(e){
     catalogo = [];
+    catalogMap = new Map();
   }
   statusMsg.textContent = '';
   renderList();
@@ -830,22 +853,10 @@ async function loadCatalogo(){
 async function saveCatalogo(){
   try{
     localStorage.setItem('catalogo', JSON.stringify(catalogo));
+    rebuildCatalogMap();
   }catch(e){
     statusMsg.textContent = 'Erro ao salvar. Verifique o espaço de armazenamento do navegador.';
   }
-}
-
-function normalizeCode(code){
-  const stripped = String(code).trim().replace(/^0+(?=\d)/, '');
-  return stripped;
-}
-
-function findExact(code){
-  const raw = String(code).trim();
-  const exact = catalogo.find(p => p.barcode === raw);
-  if(exact) return exact;
-  const norm = normalizeCode(raw);
-  return catalogo.find(p => normalizeCode(p.barcode) === norm);
 }
 
 function detailValue(v, unit){
@@ -931,6 +942,7 @@ function renderList(){
 async function deleteProduct(barcode){
   if(!confirm('Excluir este produto da base?')) return;
   catalogo = catalogo.filter(p => p.barcode !== barcode);
+  catalogMap.delete(normalizeCode(barcode));
   await saveCatalogo();
   renderList();
   if(searchInput.value.trim() === barcode) resultArea.innerHTML = '';
@@ -1164,6 +1176,7 @@ function upsertProduct(entry){
   const idx = catalogo.findIndex(p => p.barcode === entry.barcode);
   if(idx > -1) catalogo[idx] = entry;
   else catalogo.push(entry);
+  catalogMap.set(normalizeCode(entry.barcode), entry);
 }
 
 async function importCsv(file){
@@ -1401,7 +1414,7 @@ menuSobre.addEventListener('click', () => {
       Este projeto foi/está sendo desenvolvido com apoio de IA (Claude, Anthropic).
     </p>
     <div class="modal-meta">
-      Versão atual: <strong>v3.11.0</strong><br>
+      Versão atual: <strong>v3.12.0</strong><br>
       Licença: <a href="https://mit-license.org" target="_blank" rel="noopener noreferrer"><strong>MIT</strong></a>
     </div>
   `);
