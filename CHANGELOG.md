@@ -3,6 +3,10 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.12.0]
+### Changed
+- Busca de código de barras (`findExact`) indexada com `Map` (`catalogMap`, chave = código normalizado), substituindo a varredura linear no array `catalogo`. Busca passa de O(n) para O(1) — mais notável na verificação em lote, que consulta a base a cada código escaneado. Índice reconstruído ao carregar/salvar o catálogo e mantido em sincronia em cadastro/exclusão de produto (`upsertProduct`/`deleteProduct`).
+
 ## [3.11.0]
 ### Changed
 - Feedback sonoro da verificação em lote: removido o beep de código **cadastrado** (som só quando exige atenção do usuário, reduzindo falso-positivo de "ouvi um bipe, deve estar tudo certo").
