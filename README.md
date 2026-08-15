@@ -49,7 +49,7 @@ Segue [Semantic Versioning](https://semver.org/lang/pt-BR/). Histórico completo
 
 ## Créditos
 
-Desenvolvido por [Guilherme Alcântara](https://github.com/tr-cross), com apoio de IA (Claude, Anthropic) no processo de desenvolvimento.
+Desenvolvido por [Guilherme Alcântara](https://github.com/tr-cross), com apoio de IA (Claude, Anthropic).
 
 ## Licença
 
