@@ -3,6 +3,10 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.13.0]
+### Added
+- Verificação em lote: lista de resultados agora mostra o **Tamanho** ao lado da Referência (ex: "Ref. 1234 · Tam. M"). Ajuda a diferenciar, na conferência, produtos da mesma linha/categoria escaneados em tamanhos diferentes. Aparece mesmo quando o produto não tem Referência cadastrada.
+
 ## [3.12.1]
 ### Changed
 - Código reorganizado em módulos por camada técnica (padrão IIFE/namespace, sem mudar o app single-file/sem build): `SoundFeedback` (áudio), `Catalog` (dados/persistência/índice de busca), `UI` (verificação individual, lote e listagem), `CSVModule` (importação/exportação), `Modal` (menu e modais) e `Auth` (login/sessão). `Catalog` passa a ser uma camada de dados pura, sem depender do DOM.
