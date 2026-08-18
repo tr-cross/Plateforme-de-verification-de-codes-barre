@@ -814,7 +814,7 @@ const productCount = document.getElementById('productCount');
 const statusMsg = document.getElementById('statusMsg');
 const batchInput = document.getElementById('batchInput');
 
-const APP_VERSION = '3.13.1'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
+const APP_VERSION = '3.13.2'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
 document.getElementById('appVersionLabel').textContent = `Verificador de Código de Barras · v${APP_VERSION} (offline)`;
 
 function escapeHtml(str){
@@ -1208,6 +1208,15 @@ const CSVModule = (function(){
     URL.revokeObjectURL(url);
   }
 
+  /* Data/hora legível pro nome do arquivo exportado (ex: 2026-08-18_1432),
+   * em vez de Date.now() cru — mais fácil de identificar entre vários
+   * arquivos na pasta de downloads. */
+  function timestampLabel(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+  }
+
   async function importCsv(file){
     const importBtn = document.getElementById('importCsvBtn');
     const importBar = document.querySelector('.import-bar');
@@ -1322,7 +1331,7 @@ const CSVModule = (function(){
     const foundCount = results.filter(r => r.found).length;
     const totalLidos = results.reduce((sum, r) => sum + r.count, 0);
     const footer = `\n${'-'.repeat(40)}\nCódigos únicos: ${results.length} | Total lido: ${totalLidos} | Cadastrados: ${foundCount} | Não cadastrados: ${results.length - foundCount}`;
-    downloadTxt(header + lines.join('\n') + footer, `verificacao-lote-${Date.now()}.txt`);
+    downloadTxt(header + lines.join('\n') + footer, `verificacao-lote-${timestampLabel()}-${totalLidos}itens.txt`);
   });
 
   document.getElementById('exportBatchRawBtn').addEventListener('click', () => {
@@ -1337,7 +1346,7 @@ const CSVModule = (function(){
         lines.push(r.code);
       }
     });
-    downloadTxt(lines.join('\n'), `codigos-lote-${Date.now()}.txt`);
+    downloadTxt(lines.join('\n'), `codigos-lote-${timestampLabel()}-${lines.length}itens.txt`);
   });
 
   document.getElementById('exportCatalogBtn').addEventListener('click', () => {
@@ -1349,7 +1358,7 @@ const CSVModule = (function(){
     const sorted = [...catalogo].sort((a,b) => a.desc.localeCompare(b.desc, 'pt-BR'));
     const header = `Catálogo de Produtos\n${new Date().toLocaleString('pt-BR')}\nTotal: ${catalogo.length} produtos\n${'-'.repeat(40)}\n\n`;
     const lines = sorted.map(p => `${p.barcode}\t${formatLine(p)}`);
-    downloadTxt(header + lines.join('\n'), `catalogo-produtos-${Date.now()}.txt`);
+    downloadTxt(header + lines.join('\n'), `catalogo-produtos-${timestampLabel()}-${catalogo.length}itens.txt`);
   });
 
   return { importCsv };
