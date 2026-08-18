@@ -3,6 +3,10 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.13.2]
+### Changed
+- Nomes dos arquivos `.txt` exportados (verificação em lote, códigos crus do lote, catálogo completo) trocam o timestamp cru (`Date.now()`, ex: `codigos-lote-1787018260203.txt`) por data/hora legível + quantidade de itens no arquivo (ex: `codigos-lote-2026-08-18_1432-42itens.txt`). Facilita identificar e conferir o arquivo certo em meio a vários exportados no mesmo dia.
+
 ## [3.13.1]
 ### Fixed
 - Menu hambúrguer no mobile (<900px): botão "Sair" + menu ficavam alinhados à esquerda do cabeçalho, em vez da direita. Causa: `header` sem `display:flex` explícito fora do breakpoint desktop faz `.header-actions` (que já era `display:flex`) ocupar a largura toda do cabeçalho com alinhamento padrão à esquerda. Isso empurrava o dropdown do menu (posicionado com `right:0` relativo a um contêiner de ~36px de largura) para fora da tela ao abrir. Corrigido com `justify-content:flex-end` em `.header-actions`, alinhando o grupo à direita em qualquer largura de tela — o dropdown volta a abrir dentro da área visível.
