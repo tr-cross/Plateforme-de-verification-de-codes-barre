@@ -15,7 +15,7 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 - **Verificação individual** — digite ou escaneie um código de barras e veja na hora se está cadastrado, com descrição, referência, categoria, tamanho e cor.
 - **Verificação em lote** — cole ou escaneie vários códigos (um por linha); a lista agrupa repetidos e mostra quantos foram encontrados/não encontrados. A verificação roda automaticamente a cada código completado (compatível com leitores de código de barras, que simulam "Enter" após a leitura). Toca um som apenas quando o código **não está cadastrado** — sem som para códigos cadastrados, para não gerar falso-positivo de atenção.
 - **Importação via CSV** — suporta múltiplos códigos de barras por produto (delimitador `|`), com barra de progresso durante a importação.
-- **Exportação em `.txt`** — resultado completo (com status/quantidade/referência) ou lista crua de códigos, tanto na verificação individual quanto em lote.
+- **Exportação em `.txt`** — resultado completo (com status/quantidade/referência) ou lista crua de códigos, tanto na verificação em lote quanto o catálogo completo. Nome do arquivo inclui data/hora legível e quantidade de itens (ex: `codigos-lote-2026-08-18_1432-42itens.txt`), pra facilitar achar o arquivo certo entre vários exportados no mesmo dia.
 - **Normalização de código** — zeros à esquerda são ignorados na comparação (`12345` == `012345`), cobrindo divergências entre simbologias UPC-A/EAN-13.
 - **Layout responsivo** — coluna única no mobile; duas colunas (verificação individual + lote lado a lado) a partir de 900px.
 - **Autenticação** — tela de login antes do acesso ao app (ver [Autenticação](#autenticação) abaixo).
