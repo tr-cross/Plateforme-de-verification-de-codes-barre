@@ -557,6 +557,7 @@
   .header-actions{
     display:flex;
     align-items:center;
+    justify-content:flex-end;
     gap:8px;
   }
   .header-actions .logout-btn{ margin-top:12px; }
@@ -813,7 +814,7 @@ const productCount = document.getElementById('productCount');
 const statusMsg = document.getElementById('statusMsg');
 const batchInput = document.getElementById('batchInput');
 
-const APP_VERSION = '3.13.0'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
+const APP_VERSION = '3.13.1'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
 document.getElementById('appVersionLabel').textContent = `Verificador de Código de Barras · v${APP_VERSION} (offline)`;
 
 function escapeHtml(str){
