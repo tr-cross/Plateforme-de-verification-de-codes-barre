@@ -3,6 +3,10 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.13.1]
+### Fixed
+- Menu hambúrguer no mobile (<900px): botão "Sair" + menu ficavam alinhados à esquerda do cabeçalho, em vez da direita. Causa: `header` sem `display:flex` explícito fora do breakpoint desktop faz `.header-actions` (que já era `display:flex`) ocupar a largura toda do cabeçalho com alinhamento padrão à esquerda. Isso empurrava o dropdown do menu (posicionado com `right:0` relativo a um contêiner de ~36px de largura) para fora da tela ao abrir. Corrigido com `justify-content:flex-end` em `.header-actions`, alinhando o grupo à direita em qualquer largura de tela — o dropdown volta a abrir dentro da área visível.
+
 ## [3.13.0]
 ### Added
 - Verificação em lote: lista de resultados agora mostra o **Tamanho** ao lado da Referência (ex: "Ref. 1234 · Tam. M"). Ajuda a diferenciar, na conferência, produtos da mesma linha/categoria escaneados em tamanhos diferentes. Aparece mesmo quando o produto não tem Referência cadastrada.
