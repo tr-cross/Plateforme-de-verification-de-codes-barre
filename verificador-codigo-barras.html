@@ -813,7 +813,7 @@ const productCount = document.getElementById('productCount');
 const statusMsg = document.getElementById('statusMsg');
 const batchInput = document.getElementById('batchInput');
 
-const APP_VERSION = '3.12.1'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
+const APP_VERSION = '3.13.0'; // fonte única — usada no rodapé e no modal "Sobre". Manter em sincronia com o CHANGELOG.md
 document.getElementById('appVersionLabel').textContent = `Verificador de Código de Barras · v${APP_VERSION} (offline)`;
 
 function escapeHtml(str){
@@ -1096,7 +1096,7 @@ const UI = (function(){
             ${escapeHtml(r.code)}
             ${r.count > 1 ? `<span class="batch-row-qty">× ${r.count}</span>` : ''}
           </span>
-          ${r.found && r.ref ? `<span class="batch-row-ref">Ref. ${escapeHtml(r.ref)}</span>` : ''}
+          ${r.found && (r.ref || r.tam) ? `<span class="batch-row-ref">${[r.ref ? 'Ref. ' + escapeHtml(r.ref) : '', r.tam ? 'Tam. ' + escapeHtml(r.tam) : ''].filter(Boolean).join(' · ')}</span>` : ''}
         </span>
         <span class="batch-row-desc">${r.found ? '✓ Cadastrado' : '✗ Não cadastrado'}</span>
       </div>
