@@ -3,6 +3,14 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 Versionamento: [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`).
 
+## [3.12.1]
+### Changed
+- Código reorganizado em módulos por camada técnica (padrão IIFE/namespace, sem mudar o app single-file/sem build): `SoundFeedback` (áudio), `Catalog` (dados/persistência/índice de busca), `UI` (verificação individual, lote e listagem), `CSVModule` (importação/exportação), `Modal` (menu e modais) e `Auth` (login/sessão). `Catalog` passa a ser uma camada de dados pura, sem depender do DOM.
+- Número de versão centralizado numa única constante (`APP_VERSION`), usada tanto no rodapé quanto no modal "Sobre" — evita desatualizar um dos dois na próxima versão.
+- Nenhuma mudança de comportamento visível para quem usa o app. Validado com bateria de testes funcionais (login, catálogo, busca individual/lote, exportações, exclusão, logout) rodando o HTML completo num DOM simulado.
+### Added
+- Módulo `Inventory` criado como espaço reservado para a futura seção "Inventário", contendo por enquanto `matchesFilter` (função já existente, ainda não conectada a nenhuma tela).
+
 ## [3.12.0]
 ### Changed
 - Busca de código de barras (`findExact`) indexada com `Map` (`catalogMap`, chave = código normalizado), substituindo a varredura linear no array `catalogo`. Busca passa de O(n) para O(1) — mais notável na verificação em lote, que consulta a base a cada código escaneado. Índice reconstruído ao carregar/salvar o catálogo e mantido em sincronia em cadastro/exclusão de produto (`upsertProduct`/`deleteProduct`).
