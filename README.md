@@ -6,7 +6,7 @@ Aplicação single-file (HTML + CSS + JS, sem build, sem dependências externas 
 
 | Arquivo | Armazenamento | Onde roda |
 |---|---|---|
-| `verificador-codigo-barras-offline.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
+| `verificador-codigo-barras.html` | `localStorage` do navegador | Qualquer navegador — duplo clique no arquivo, Live Server, servidor local, etc. |
 
 > Este repositório publica apenas a build offline. Uma build alternativa (usando `window.storage`, a API de armazenamento de artefatos do Claude) é usada internamente para testes de desenvolvimento dentro do claude.ai, mas não é distribuída aqui — depende de acesso à IA da Anthropic, o que não deve ser um pré-requisito para usar o projeto.
 
